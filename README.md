@@ -50,3 +50,25 @@ Photos are served through: `https://cdn.jsdelivr.net/gh/EllieAtWHL/spurs-women-p
 ## Repository Secrets
 
 The workflow requires `PORTFOLIO_REPO_TOKEN` secret with write access to the portfolio repository.
+
+### Setting up PORTFOLIO_REPO_TOKEN
+
+1. **Create a Personal Access Token (PAT)**:
+   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Click "Generate new token (classic)"
+   - Give it a descriptive name (e.g., "Photo Gallery Workflow")
+   - Set an appropriate expiration period
+   - Select the following scopes:
+     - ✅ `repo` (Full control of private repositories)
+     - ✅ `workflow` (Update GitHub Action workflows)
+
+2. **Copy the token** immediately (you won't be able to see it again)
+
+3. **Add the token as a repository secret**:
+   - In this repository (`spurs-women-photo-gallery`), go to Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `PORTFOLIO_REPO_TOKEN`
+   - Value: Paste the token you copied
+   - Click "Add secret"
+
+**Important**: The token must have write permissions to the `my-portfolio-website` repository. If the repositories are under different organizations, ensure the token has cross-repository access.
