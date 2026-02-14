@@ -59,11 +59,17 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        echo "Current remotes:"
+        git remote -v
+        echo "Setting remote URL with token..."
         git remote set-url origin https://${{ secrets.PORTFOLIO_REPO_TOKEN }}@github.com/EllieAtWHL/my-portfolio-website.git
+        echo "Remotes after update:"
+        git remote -v
         git add public/spurs-women/photo-gallery.manifest.json
         git diff --staged --quiet || git commit -m "auto: update photo gallery manifest
         
         - Generated from external photo repository changes
         - Triggered by commit: ${{ github.sha }}
         - Total folders: $(node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('public/spurs-women/photo-gallery.manifest.json', 'utf8'))).length - 1)")"
+        echo "Pushing to origin main..."
         git push origin main
