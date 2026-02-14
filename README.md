@@ -60,7 +60,6 @@ The workflow requires `PORTFOLIO_REPO_TOKEN` secret with write access to the por
    - Set an appropriate expiration period
    - Select the following scopes:
      - ✅ `repo` (Full control of private repositories)
-     - ✅ `workflow` (Update GitHub Action workflows)
 
 2. **Copy the token** immediately (you won't be able to see it again)
 
