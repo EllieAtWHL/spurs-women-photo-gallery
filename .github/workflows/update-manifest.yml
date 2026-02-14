@@ -27,7 +27,8 @@ jobs:
         repository: EllieAtWHL/my-portfolio-website
         path: portfolio-repo
         token: ${{ secrets.PORTFOLIO_REPO_TOKEN }}
-        ref: refs/heads/refactor/image-storage
+        ref: refactor/image-storage
+        fetch-depth: 0
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
