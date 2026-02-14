@@ -27,6 +27,7 @@ jobs:
         repository: EllieAtWHL/my-portfolio-website
         path: portfolio-repo
         token: ${{ secrets.PORTFOLIO_REPO_TOKEN }}
+        fetch-depth: 0
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -58,10 +59,11 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        git remote set-url origin https://${{ secrets.PORTFOLIO_REPO_TOKEN }}@github.com/EllieAtWHL/my-portfolio-website.git
         git add public/spurs-women/photo-gallery.manifest.json
         git diff --staged --quiet || git commit -m "auto: update photo gallery manifest
         
         - Generated from external photo repository changes
         - Triggered by commit: ${{ github.sha }}
         - Total folders: $(node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('public/spurs-women/photo-gallery.manifest.json', 'utf8'))).length - 1)")"
-        git push
+        git push origin main
