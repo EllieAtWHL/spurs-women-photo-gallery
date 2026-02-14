@@ -27,8 +27,6 @@ jobs:
         repository: EllieAtWHL/my-portfolio-website
         path: portfolio-repo
         token: ${{ secrets.PORTFOLIO_REPO_TOKEN }}
-        ref: refactor/image-storage
-        fetch-depth: 0
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -40,10 +38,6 @@ jobs:
     - name: Install dependencies
       working-directory: portfolio-repo
       run: npm ci
-      
-    - name: Debug available scripts
-      working-directory: portfolio-repo
-      run: npm run
       
     - name: Generate photo manifest
       env:
