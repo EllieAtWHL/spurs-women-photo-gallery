@@ -1,0 +1,67 @@
+name: Update Photo Gallery Manifest
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.png'
+      - '**/*.webp'
+      - '**/*.avif'
+  workflow_dispatch:
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout photo repository
+      uses: actions/checkout@v4
+      with:
+        path: photo-repo
+        
+    - name: Checkout portfolio repository
+      uses: actions/checkout@v4
+      with:
+        repository: EllieAtWHL/my-portfolio-website
+        path: portfolio-repo
+        token: ${{ secrets.PORTFOLIO_REPO_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: portfolio-repo/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: portfolio-repo
+      run: npm ci
+      
+    - name: Generate photo manifest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        EXTERNAL_REPO_OWNER: ${{ github.repository_owner }}
+        EXTERNAL_REPO_NAME: ${{ github.event.repository.name }}
+      working-directory: portfolio-repo
+      run: |
+        npm run generate-external-manifest
+        
+    - name: Validate generated manifest
+      working-directory: portfolio-repo
+      run: |
+        npm run validate-manifest
+        
+    - name: Commit and push manifest
+      working-directory: portfolio-repo
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add public/spurs-women/photo-gallery.manifest.json
+        git diff --staged --quiet || git commit -m "auto: update photo gallery manifest
+        
+        - Generated from external photo repository changes
+        - Triggered by commit: ${{ github.sha }}
+        - Total folders: $(node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('public/spurs-women/photo-gallery.manifest.json', 'utf8'))).length - 1)")"
+        git push
