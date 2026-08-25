@@ -9,6 +9,7 @@ on:
       - '**/*.png'
       - '**/*.webp'
       - '**/*.avif'
+      - '!player-photos/**'
   workflow_dispatch:
 
 jobs:
@@ -55,18 +56,41 @@ jobs:
       run: |
         npm run validate-manifest
         
-    - name: Commit and push manifest
+    - name: Commit manifest to a branch
+      id: commit
       working-directory: portfolio-repo
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        echo "Current remotes:"
-        git remote -v
         git add public/spurs-women/photo-gallery.manifest.json
-        git diff --staged --quiet || git commit -m "auto: update photo gallery manifest
-        
+        if git diff --staged --quiet; then
+          echo "No manifest changes to commit"
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        BRANCH="auto/update-manifest-${{ github.sha }}"
+        git checkout -b "$BRANCH"
+        git commit -m "auto: update photo gallery manifest
+
         - Generated from external photo repository changes
         - Triggered by commit: ${{ github.sha }}
         - Total folders: $(node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('public/spurs-women/photo-gallery.manifest.json', 'utf8'))).length - 1)")"
-        echo "Pushing to origin main..."
-        git push origin main
+        git push origin "$BRANCH"
+        echo "changed=true" >> "$GITHUB_OUTPUT"
+        echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+    - name: Open PR and enable auto-merge
+      if: steps.commit.outputs.changed == 'true'
+      working-directory: portfolio-repo
+      env:
+        GH_TOKEN: ${{ secrets.PORTFOLIO_REPO_TOKEN }}
+      run: |
+        # main is protected with required status checks, so this can't push directly -
+        # a PR lets those checks run against the commit, then auto-merge lands it once green.
+        PR_URL=$(gh pr create \
+          --repo EllieAtWHL/my-portfolio-website \
+          --base main \
+          --head "${{ steps.commit.outputs.branch }}" \
+          --title "auto: update photo gallery manifest" \
+          --body "Automated manifest regeneration triggered by EllieAtWHL/spurs-women-photo-gallery@${{ github.sha }}.")
+        gh pr merge "$PR_URL" --repo EllieAtWHL/my-portfolio-website --auto --merge --delete-branch
